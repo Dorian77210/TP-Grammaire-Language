@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "automate.h"
 
 Automate::~Automate()
@@ -5,42 +7,120 @@ Automate::~Automate()
     
 }
 
-Automate::Automate()
+Automate::Automate(string name) : lexer(name)
 {
-    
+
 }
 
+// (1+34)*123
 void Automate::lecture()
 {
+    etats.push_back(new Etat0);
     Symbole * s;
     while(*(s=lexer.Consulter())!=FIN) 
     {
-      s->Affiche();
-      cout<<endl;
-      lexer.Avancer();
+      Etat* topEtat = etats.back();
+      topEtat->transition(*this, s);
    }
 }
 
 void Automate::decalage(Symbole * s, Etat * etat)
 {
+    symboles.push_back(s);
+    etats.push_back(etat);
+    if (s->isTerminal())
+    {
+        lexer.Avancer ();
+    }
 
+    cout << "Décalage : ";
+    printEtats();
+    cout << endl;
+    printSymboles();
+    cout << endl << endl;
 }
 
 void Automate::reduction(int n, Symbole * s)
 {
+    for (int i (0); i < n; ++i)
+    {
+        delete (etats.back());
+        etats.pop_back();
+        delete (symboles.back());
+        symboles.pop_back();
+    }
 
+    cout << "Réduction : ";
+    printEtats();
+    cout << endl;
+    printSymboles();
+    cout << endl << endl;
+
+    Symbole * newS = new Symbole(E);
+    etats.back()->transition(*this, newS);
+}
+
+void Automate::printEtats()
+{
+    cout << "Pile des états : " << endl;
+    for(auto iter = etats.begin(); iter != etats.end(); ++iter) 
+    {
+        Etat* e = *iter;
+        e->print();
+    }
+
+    cout << endl;
+}
+
+void Automate::printSymboles()
+{
+    cout << "Pile des symboles : " << endl;
+    for(auto iter = symboles.begin(); iter != symboles.end(); ++iter) 
+    {
+        Symbole* s = *iter;
+        s->Affiche();
+    }
+
+    cout << endl;
 }
 
 void Automate::accepter()
 {
-
+    cout << "Fin de l'automate" << endl;
 }
 
 
 // ------ Etats
 
+Etat::~Etat()
+{
+    
+}
+
+Etat::Etat()
+{
+
+}
+
+Etat::Etat(string _name)
+    : name (_name)
+{
+    
+}
+
+void Etat::print() const
+{
+    cout << name << endl;
+}
+
 /** Etat 0 **/
-Etat0::transition(Automate & automate, Symbole * s)
+Etat0::Etat0()
+    : Etat ("Etat0")
+{
+
+}
+
+bool Etat0::transition(Automate & automate, Symbole * s)
 {
     switch (*s)
     {
@@ -53,16 +133,21 @@ Etat0::transition(Automate & automate, Symbole * s)
         case E:
             automate.decalage(s, new Etat1);
             break;
+        default:
+            return false;
     }
-}
 
-Etat0::print() const
-{
-    cout << "Passage par l'état 0" << endl;
+    return true;
 }
 
 /** Etat 1 **/
-Etat1::transition(Automate & automate, Symbole * s)
+Etat1::Etat1()
+    : Etat ("Etat1")
+{
+
+}
+
+bool Etat1::transition(Automate & automate, Symbole * s)
 {
     switch (*s)
     {
@@ -74,16 +159,21 @@ Etat1::transition(Automate & automate, Symbole * s)
             break;
         case FIN:
             automate.accepter();
+        default:
+            return false;
     }
-}
 
-Etat1::print() const
-{
-    cout << "Passage par l'état 1" << endl;
+    return true;
 }
 
 /** Etat 2 **/
-Etat2::transition(Automate & automate, Symbole * s)
+Etat2::Etat2()
+    : Etat ("Etat2")
+{
+
+}
+
+bool Etat2::transition(Automate & automate, Symbole * s)
 {
     switch (*s)
     {
@@ -95,35 +185,45 @@ Etat2::transition(Automate & automate, Symbole * s)
             break;
         case E:
             automate.decalage(s, new Etat6);
+        default:
+            return false;
     }
-}
 
-Etat2::print() const
-{
-    cout << "Passage par l'état 2" << endl;
+    return true;
 }
 
 /** Etat 3 **/
-Etat3::transition(Automate & automate, Symbole * s)
+Etat3::Etat3()
+    : Etat ("Etat3")
+{
+
+}
+
+bool Etat3::transition(Automate & automate, Symbole * s)
 {
     switch (*s)
     {
         case PLUS:
         case MULT:
         case CLOSEPAR:
-        case END:
-            automate.reduction(5, s);
+        case FIN:
+            automate.reduction(1, s);
             break;
+        default: 
+            return false;
     }
-}
 
-Etat3::print() const
-{
-    cout << "Passage par l'état 3" << endl;
+    return true;
 }
 
 /** Etat 4 **/
-Etat4::transition(Automate & automate, Symbole * s)
+Etat4::Etat4()
+    : Etat ("Etat4")
+{
+
+}
+
+bool Etat4::transition(Automate & automate, Symbole * s)
 {
     switch (*s)
     {
@@ -136,16 +236,21 @@ Etat4::transition(Automate & automate, Symbole * s)
         case E:
             automate.decalage(s, new Etat7);
             break;
+        default:
+            return false;
     }
-}
 
-Etat4::print() const
-{
-    cout << "Passage par l'état 4" << endl;
+    return true;
 }
 
 /** Etat 5 **/
-Etat5::transition(Automate & automate, Symbole * s)
+Etat5::Etat5()
+    : Etat ("Etat5")
+{
+
+}
+
+bool Etat5::transition(Automate & automate, Symbole * s)
 {
     switch (*s)
     {
@@ -158,16 +263,21 @@ Etat5::transition(Automate & automate, Symbole * s)
         case E:
             automate.decalage(s, new Etat8);
             break;
+        default:
+            return false;
     }
-}
 
-Etat5::print() const
-{
-    cout << "Passage par l'état 5" << endl;
+    return true;
 }
 
 /** Etat 6 **/
-Etat6::transition(Automate & automate, Symbole * s)
+Etat6::Etat6()
+    : Etat ("Etat6")
+{
+
+}
+
+bool Etat6::transition(Automate & automate, Symbole * s)
 {
     switch (*s)
     {
@@ -180,69 +290,83 @@ Etat6::transition(Automate & automate, Symbole * s)
         case CLOSEPAR:
             automate.decalage(s, new Etat9);
             break;
+        default:
+            return false;
     }
-}
 
-Etat6::print() const
-{
-    cout << "Passage par l'état 6" << endl;
+    return true;
 }
 
 /** Etat 7 **/
-Etat7::transition(Automate & automate, Symbole * s)
+Etat7::Etat7()
+    : Etat ("Etat7")
+{
+
+}
+
+bool Etat7::transition(Automate & automate, Symbole * s)
 {
     switch (*s)
     {
         case PLUS:
         case CLOSEPAR:
-        case END:
-            automate.reduction(2, s);
+        case FIN:
+            automate.reduction(3, s);
             break;
         case MULT:
             automate.decalage(s, new Etat5);
             break;
+        default:
+            return false;
     }
-}
 
-Etat7::print() const
-{
-    cout << "Passage par l'état 7" << endl;
+    return true;
 }
 
 /** Etat 8 **/
-Etat8::transition(Automate & automate, Symbole * s)
+Etat8::Etat8()
+    : Etat ("Etat8")
+{
+
+}
+
+bool Etat8::transition(Automate & automate, Symbole * s)
 {
     switch (*s)
     {
         case PLUS:
         case MULT:
         case CLOSEPAR:
-        case END:
+        case FIN:
             automate.reduction(3, s);
             break;
+        default:
+            return false;
     }
-}
 
-Etat8::print() const
-{
-    cout << "Passage par l'état 8" << endl;
+    return true;
 }
 
 /** Etat 9 **/
-Etat9::transition(Automate & automate, Symbole * s)
+Etat9::Etat9()
+    : Etat ("Etat9")
+{
+
+}
+
+bool Etat9::transition(Automate & automate, Symbole * s)
 {
     switch (*s)
     {
         case PLUS:
         case MULT:
         case CLOSEPAR:
-        case END:
-            automate.reduction(4, s);
+        case FIN:
+            automate.reduction(3, s);
             break;
+        default:
+            return false;
     }
-}
 
-Etat9::print() const
-{
-    cout << "Passage par l'état 9" << endl;
+    return true;
 }

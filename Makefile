@@ -11,6 +11,7 @@ EXE = main
 OFILES = $(BIN)/main.o \
 	     $(BIN)/lexer.o \
 		 $(BIN)/symbole.o \
+		 $(BIN)/automate.o
 
 all: $(EXE)
 

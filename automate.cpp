@@ -20,8 +20,35 @@ void Automate::lecture()
     while(*(s=lexer.Consulter())!=FIN) 
     {
       Etat* topEtat = etats.back();
-      topEtat->transition(*this, s);
+      if (!topEtat->transition(*this, s))
+      {
+          cout << "Erreur dans l'automate à l'état : ";
+          topEtat->print();
+          cout << " avec le symbole : ";
+          s->Affiche();
+          
+          return;
+      }
    }
+
+    bool accepter = false;
+    Symbole* fin = new Symbole(FIN);
+
+    while (!accepter)
+    {
+        if (symboles.size() == 1 && *symboles.back() == E)
+        {
+            accepter = true;
+        }
+        else
+        {
+            Etat* topEtat = etats.back();
+            topEtat->transition(*this, fin);
+        }
+        
+    }
+
+    cout << "Fin de l'automate, succès !" << endl;
 }
 
 void Automate::decalage(Symbole * s, Etat * etat)

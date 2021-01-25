@@ -4,7 +4,9 @@
 using namespace std;
 
 int main(void) {
-   string chaine("1+2*3");
+   string chaine;
+   cout << "Tapez une chaîne à analysée : ";
+   cin >> chaine;
 
    Automate automate (chaine);
    automate.lecture();

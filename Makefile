@@ -20,7 +20,7 @@ clean:
 $(EXE): $(OFILES)
 	$(CC) $(CFLAGS) -o $(EXE) $(OFILES)
 
-$(BIN)/main.o: lexer.h symbole.h main.cpp 
+$(BIN)/main.o: automate.h main.cpp 
 	$(CC) $(CFLAGS) -o $(BIN)/main.o -c main.cpp
 
 $(BIN)/lexer.o: symbole.h symbole.cpp
@@ -29,8 +29,5 @@ $(BIN)/lexer.o: symbole.h symbole.cpp
 $(BIN)/symbole.o: symbole.h symbole.cpp
 	$(CC) $(CFLAGS) -o $(BIN)/symbole.o -c symbole.cpp
 
-$(BIN)/etat.o: etat.h etat.cpp automate.h
-	$(CC) $(CFLAGS) -o $(BIN)/etat.o -c etat.cpp
-
-$(BIN)/automate.o: automate.h automate.cpp etat.h symbole.h lexer.h
+$(BIN)/automate.o: automate.h automate.cpp symbole.h lexer.h
 	$(CC) $(CFLAGS) -o $(BIN)/automate.o -c automate.cpp

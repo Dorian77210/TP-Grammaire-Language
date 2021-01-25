@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "automate.h"
+#include "expr.h"
 
 Automate::~Automate()
 {
@@ -12,7 +13,6 @@ Automate::Automate(string name) : lexer(name)
 
 }
 
-// (1+34)*123
 void Automate::lecture()
 {
     etats.push_back(new Etat0);
@@ -45,10 +45,14 @@ void Automate::lecture()
             Etat* topEtat = etats.back();
             topEtat->transition(*this, fin);
         }
-        
     }
 
+
+    Expr * finalExpr = (Expr*) symboles.back();
+    double result = finalExpr->eval();
+
     cout << "Fin de l'automate, succès !" << endl;
+    cout << "Résultat = " << result << endl;
 }
 
 void Automate::decalage(Symbole * s, Etat * etat)
@@ -60,30 +64,27 @@ void Automate::decalage(Symbole * s, Etat * etat)
         lexer.Avancer ();
     }
 
-    cout << "Décalage : ";
-    printEtats();
-    cout << endl;
-    printSymboles();
-    cout << endl << endl;
+    // cout << "Décalage : ";
+    // printEtats();
+    // cout << endl;
+    // printSymboles();
+    // cout << endl << endl;
 }
 
-void Automate::reduction(int n, Symbole * s)
+void Automate::reduction(int n, Symbole * newS)
 {
     for (int i (0); i < n; ++i)
     {
         delete (etats.back());
         etats.pop_back();
-        delete (symboles.back());
-        symboles.pop_back();
     }
 
-    cout << "Réduction : ";
-    printEtats();
-    cout << endl;
-    printSymboles();
-    cout << endl << endl;
+    // cout << "Réduction : ";
+    // printEtats();
+    // cout << endl;
+    // printSymboles();
+    // cout << endl << endl;
 
-    Symbole * newS = new Symbole(E);
     etats.back()->transition(*this, newS);
 }
 
@@ -149,7 +150,7 @@ Etat0::Etat0()
 
 bool Etat0::transition(Automate & automate, Symbole * s)
 {
-    switch (*s)
+    switch (s->getIdent())
     {
         case INT:
             automate.decalage(s, new Etat3);
@@ -176,7 +177,7 @@ Etat1::Etat1()
 
 bool Etat1::transition(Automate & automate, Symbole * s)
 {
-    switch (*s)
+    switch (s->getIdent())
     {
         case PLUS:
             automate.decalage(s, new Etat4);
@@ -202,7 +203,7 @@ Etat2::Etat2()
 
 bool Etat2::transition(Automate & automate, Symbole * s)
 {
-    switch (*s)
+    switch (s->getIdent())
     {
         case INT:
             automate.decalage(s, new Etat3);
@@ -228,13 +229,16 @@ Etat3::Etat3()
 
 bool Etat3::transition(Automate & automate, Symbole * s)
 {
-    switch (*s)
+    Entier* entier;
+    switch (s->getIdent())
     {
         case PLUS:
         case MULT:
         case CLOSEPAR:
         case FIN:
-            automate.reduction(1, s);
+            // symboles.pop_back();
+            entier = (Entier*)automate.popSymbole();
+            automate.reduction(1, new Nombre((double)entier->getValeur()));
             break;
         default: 
             return false;
@@ -252,7 +256,7 @@ Etat4::Etat4()
 
 bool Etat4::transition(Automate & automate, Symbole * s)
 {
-    switch (*s)
+    switch (s->getIdent())
     {
         case INT:
             automate.decalage(s, new Etat3);
@@ -279,7 +283,7 @@ Etat5::Etat5()
 
 bool Etat5::transition(Automate & automate, Symbole * s)
 {
-    switch (*s)
+    switch (s->getIdent())
     {
         case INT:
             automate.decalage(s, new Etat3);
@@ -306,7 +310,7 @@ Etat6::Etat6()
 
 bool Etat6::transition(Automate & automate, Symbole * s)
 {
-    switch (*s)
+    switch (s->getIdent())
     {
         case PLUS:
             automate.decalage(s, new Etat4);
@@ -333,12 +337,21 @@ Etat7::Etat7()
 
 bool Etat7::transition(Automate & automate, Symbole * s)
 {
-    switch (*s)
+    Expr* first;
+    Expr* second;
+
+    switch (s->getIdent())
     {
         case PLUS:
         case CLOSEPAR:
         case FIN:
-            automate.reduction(3, s);
+            first = (Expr*) automate.popSymbole();
+            // operateur
+            automate.popSymbole();
+            second = (Expr*) automate.popSymbole();
+
+            automate.reduction(3, new ExprPlus(first, second));
+
             break;
         case MULT:
             automate.decalage(s, new Etat5);
@@ -359,13 +372,21 @@ Etat8::Etat8()
 
 bool Etat8::transition(Automate & automate, Symbole * s)
 {
-    switch (*s)
+    Expr* first;
+    Expr* second;
+
+    switch (s->getIdent())
     {
         case PLUS:
         case MULT:
         case CLOSEPAR:
         case FIN:
-            automate.reduction(3, s);
+            first = (Expr*) automate.popSymbole();
+            // operateur * 
+            automate.popSymbole();
+            second = (Expr*) automate.popSymbole();
+
+            automate.reduction(3, new ExprMult(first, second));
             break;
         default:
             return false;
@@ -383,13 +404,19 @@ Etat9::Etat9()
 
 bool Etat9::transition(Automate & automate, Symbole * s)
 {
-    switch (*s)
+    Expr* expr;
+    switch (s->getIdent())
     {
         case PLUS:
         case MULT:
         case CLOSEPAR:
         case FIN:
-            automate.reduction(3, s);
+            // (
+            automate.popSymbole();
+            expr = (Expr*) automate.popSymbole();
+            // )
+            automate.popSymbole();
+            automate.reduction(3, expr);
             break;
         default:
             return false;

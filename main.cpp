@@ -3,6 +3,8 @@
 
 using namespace std;
 
+
+//todo : delete
 int main(void) {
    string chaine;
    cout << "Tapez une chaîne à analysée : ";

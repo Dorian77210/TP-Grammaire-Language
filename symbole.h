@@ -19,6 +19,11 @@ class Symbole {
          return (ident != E) && (ident != ERREUR);
       }
 
+      inline int getIdent()
+      {
+         return ident;
+      }
+
    protected:
       int ident;
 };
@@ -28,6 +33,10 @@ class Entier : public Symbole {
       Entier(int v) : Symbole(INT), valeur(v) { }
       ~Entier() { }
       virtual void Affiche();
+      inline int getValeur()
+      {
+         return valeur;
+      }
    protected:
       int valeur;
 };

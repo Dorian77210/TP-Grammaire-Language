@@ -13,12 +13,18 @@ class Etat;
 class Automate {
    public:
         Automate(string chaine);
-        ~Automate();
+        virtual ~Automate();
 
         void lecture();
         void decalage(Symbole * s, Etat * e);
         void reduction(int n, Symbole * s);
         void accepter();
+        inline Symbole * popSymbole()
+        {
+            Symbole * symbole = symboles.back();
+            symboles.pop_back();
+            return symbole;
+        }
 
     protected:
         Lexer lexer;

@@ -22,9 +22,9 @@ void Automate::lecture()
       Etat* topEtat = etats.back();
       if (!topEtat->transition(*this, s))
       {
-          cout << "Erreur dans l'automate à l'état : ";
+          cerr << "Erreur dans l'automate à l'état : ";
           topEtat->print();
-          cout << " avec le symbole : ";
+          cerr << " avec le symbole : ";
           s->Affiche();
           
           return;
@@ -43,7 +43,11 @@ void Automate::lecture()
         else
         {
             Etat* topEtat = etats.back();
-            topEtat->transition(*this, fin);
+            if (!topEtat->transition(*this, fin))
+            {
+                cerr << "Erreur dans l'analyse" << endl;
+                return;
+            }
         }
     }
 
